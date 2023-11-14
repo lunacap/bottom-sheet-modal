@@ -1,118 +1,48 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, {useState} from 'react';
+import {Button, SafeAreaView, Text, TextInput, View} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {BottomSheetModal} from './src';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+const App = () => {
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [val, setVal] = useState<string>('');
+  const [rendered, setRendered] = useState<boolean>(false);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={{width: '100%', height: '100%'}}>
+        <Button title="Show Modal" onPress={() => setIsModalVisible(true)} />
+        <BottomSheetModal
+          withOverlay
+          overlayOpacity={0.3}
+          setIsModalVisible={setIsModalVisible}
+          isModalVisible={isModalVisible}>
+          <View>
+            <Text>Input</Text>
+            <TextInput value={val} onChangeText={setVal} multiline />
+            <Button title="Submit" onPress={() => setIsModalVisible(false)} />
+          </View>
+          <View>
+            <Text>Original Text</Text>
+            {rendered && (
+              <>
+                <Text>Rendered Text 1</Text>
+                <Text>Rendered Text 2</Text>
+                <Text>Rendered Text 3</Text>
+                <Text>Rendered Text 4</Text>
+                <Text>Rendered Text 5</Text>
+              </>
+            )}
+            <Button
+              title="render texts"
+              onPress={() => setRendered(current => !current)}
+            />
+          </View>
+        </BottomSheetModal>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
