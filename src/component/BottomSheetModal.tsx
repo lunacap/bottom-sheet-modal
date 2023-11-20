@@ -1,91 +1,162 @@
 import {PropsWithChildren, useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, Modal, Pressable, View} from 'react-native';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import {Keyboard, Modal, Pressable, StyleProp, ViewStyle} from 'react-native';
+import Animated, {runOnJS, useAnimatedStyle} from 'react-native-reanimated';
 
-import {useKeyboardInfo} from '../hooks/useKeyboardInfo';
-import {useAnimatedOpacity, useVerticalAnimatedPosition} from '../hooks';
+import {
+  useAnimatedOpacity,
+  useVerticalAnimatedPosition,
+  useSafeProperties,
+  useWidth,
+  SafeProperty,
+} from '../hooks';
+import {DataTypes} from '../constants';
+
+import {BottomSheetCard} from './BottomSheetCard';
 import {styles} from './BottomSheetModal.styles';
 
-export type BottomSheetModalProps = PropsWithChildren<{
+export type BottomSheetModalProps = {
   isModalVisible: boolean;
   setIsModalVisible: (value: boolean) => void;
-  withOverlay?: boolean;
+  isSecondModalVisible?: boolean;
+  setIsSecondModalVisible?: (value: boolean) => void;
+  firstBottomSheetCardProps: BottomSheetCardProps;
+  secondBottomSheetProps?: BottomSheetCardProps;
+  firstBottomSheetFadeOutValue?: number;
+};
+
+export type BottomSheetCardProps = PropsWithChildren<{
   isOverlayDisabled?: boolean;
-  scrollPosition?: number;
+  snapPosition?: number;
   overlayOpacity?: number;
+  indicatorStyle?: StyleProp<ViewStyle>;
+  modalStyle?: StyleProp<ViewStyle>;
 }>;
 
 export const BottomSheetModal = ({
   isModalVisible,
   setIsModalVisible,
-  children,
-  withOverlay,
-  isOverlayDisabled,
-  scrollPosition,
-  overlayOpacity,
+  isSecondModalVisible,
+  setIsSecondModalVisible,
+  firstBottomSheetCardProps,
+  secondBottomSheetProps,
+  firstBottomSheetFadeOutValue,
 }: BottomSheetModalProps): JSX.Element => {
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [contentHeight, setContentHeight] = useState(0);
+  const [isModalVisibleInternal, setIsBottomVisibleInternal] =
+    useState<boolean>(false);
 
-  const keyboardInfo = useKeyboardInfo();
+  const [firstContentHeight, setFirstContentHeight] = useState(0);
+  const [secondContentHeight, setSecondContentHeight] = useState(0);
 
-  const totalHeight = useMemo(
-    () =>
-      contentHeight +
-      (keyboardInfo.isKeyboardVisible ? keyboardInfo.keyboardHeight : 0),
-    [contentHeight, keyboardInfo.isKeyboardVisible],
-  );
-  const Overlay = useMemo(
+  const AnimatedPressable = useMemo(
     () => Animated.createAnimatedComponent(Pressable),
     [],
   );
 
-  const updateModalState = useCallback((value: boolean) => {
-    setIsVisible(value);
+  const firstBottomSheetCallback = useCallback((value: boolean) => {
+    setIsBottomVisibleInternal(value);
     setIsModalVisible(value);
   }, []);
 
-  const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
-    setContentHeight(event.nativeEvent.layout.height);
+  const secondBottomSheetCallback = useCallback((value: boolean) => {
+    setIsSecondModalVisible?.(value);
   }, []);
 
   const handleOverlayPress = useCallback(() => {
-    setIsModalVisible(false);
-  }, []);
+    if (isSecondModalVisible && setIsSecondModalVisible) {
+      if (Keyboard.isVisible()) {
+        Keyboard.dismiss();
+      }
+      runOnJS(setIsSecondModalVisible)(false);
+    } else {
+      runOnJS(setIsModalVisible)(false);
+    }
+  }, [isSecondModalVisible]);
 
-  const verticalPosition = useVerticalAnimatedPosition({
-    isModalVisible,
-    target: scrollPosition ?? totalHeight,
-    callback: updateModalState,
+  const firstCardVerticalPosition = useVerticalAnimatedPosition({
+    isCardVisible: isModalVisible,
+    target: isSecondModalVisible
+      ? secondContentHeight + 30
+      : firstContentHeight,
+    callback: firstBottomSheetCallback,
   });
 
-  const overlayOpacityH = useAnimatedOpacity({
-    isModalVisible,
-    target: overlayOpacity,
+  const secondCardVerticalPosition = useVerticalAnimatedPosition({
+    isCardVisible: isSecondModalVisible as boolean,
+    target: secondContentHeight,
+    callback: secondBottomSheetCallback,
   });
 
-  const animatedModalCardStyles = useAnimatedStyle(() => ({
-    transform: [{translateY: verticalPosition.value}],
+  const {overlayOpacity, bottomSheetOpacity} = useAnimatedOpacity({
+    isModalVisible: isSecondModalVisible || isModalVisible,
+    isSecondModalVisible: isSecondModalVisible as boolean,
+    target: {
+      overlay: isSecondModalVisible
+        ? (secondBottomSheetProps?.overlayOpacity as number)
+        : (firstBottomSheetCardProps.overlayOpacity as number),
+      bottomSheet: firstBottomSheetFadeOutValue as number,
+    },
+  });
+
+  const firstBottomSheetWidth = useWidth({
+    shouldScale: isSecondModalVisible as boolean,
+  });
+
+  const animatedOverlayStyle = useAnimatedStyle(() => ({
+    opacity: overlayOpacity.value,
   }));
 
-  const animatedOverlayStyles = useAnimatedStyle(() => ({
-    opacity: overlayOpacityH.value,
-  }));
+  const Overlay = () => {
+    return (
+      <AnimatedPressable
+        style={[styles.overlay, animatedOverlayStyle]}
+        onPress={handleOverlayPress}
+      />
+    );
+  };
+
+  const safeProperties: Array<SafeProperty> = [
+    {
+      propertyName: 'isModalVisible',
+      propertyValue: isModalVisible,
+      typeSafety: {
+        propertyType: DataTypes.BOOLEAN,
+      },
+    },
+    {
+      propertyName: 'setIsModalVisible',
+      propertyValue: setIsModalVisible,
+      typeSafety: {
+        propertyType: DataTypes.FUNCTION,
+      },
+    },
+  ];
+  useSafeProperties(safeProperties);
+
   return (
-    <Modal visible={isVisible} animationType="none" transparent>
-      {withOverlay && (
-        <Overlay
-          style={[styles.overlay, animatedOverlayStyles]}
-          disabled={isOverlayDisabled}
-          onPress={handleOverlayPress}
-        />
-      )}
-      <Animated.View style={[styles.modalCard, animatedModalCardStyles]}>
-        <View onLayout={handleContentLayout}>
-          <View style={styles.indicator} />
-          {children}
-        </View>
-      </Animated.View>
+    <Modal visible={isModalVisibleInternal} animationType="none" transparent>
+      <Overlay />
+      <BottomSheetCard
+        onLayout={setFirstContentHeight}
+        indicatorStyle={firstBottomSheetCardProps.indicatorStyle}
+        verticalPosition={firstCardVerticalPosition}
+        width={firstBottomSheetWidth}
+        opacity={bottomSheetOpacity}
+        overlayOpacity={firstBottomSheetCardProps.overlayOpacity}
+        isOverlayDisabled={firstBottomSheetCardProps.isOverlayDisabled}
+        modalStyle={firstBottomSheetCardProps.modalStyle}
+        snapPosition={firstBottomSheetCardProps.snapPosition}>
+        {firstBottomSheetCardProps.children}
+      </BottomSheetCard>
+      <BottomSheetCard
+        onLayout={setSecondContentHeight}
+        verticalPosition={secondCardVerticalPosition}
+        indicatorStyle={secondBottomSheetProps?.indicatorStyle}
+        overlayOpacity={secondBottomSheetProps?.overlayOpacity}
+        isOverlayDisabled={secondBottomSheetProps?.isOverlayDisabled}
+        modalStyle={secondBottomSheetProps?.modalStyle}
+        snapPosition={secondBottomSheetProps?.snapPosition}>
+        {secondBottomSheetProps?.children}
+      </BottomSheetCard>
     </Modal>
   );
 };
