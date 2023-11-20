@@ -1,7 +1,7 @@
 {
   "name": "@lunacap/bottom-sheet-modal",
   "author": "Murat Karaca",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "main": "src/index.ts",
   "description": "A react-native bottom sheet modal library for an easy and optimized implementation.",
@@ -18,7 +18,8 @@
     "react-native",
     "modal",
     "bottom-sheet",
-    "stacked"
+    "stacked",
+    "stacked-bottom-sheet"
   ],
   "license": "MIT",
   "publishConfig": {
