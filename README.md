@@ -1,79 +1,98 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native Bottom Sheet Modal Library
 
-# Getting Started
+A simple, easy to use and performant bottom sheet library for react-native.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Installation
 
-## Step 1: Start the Metro Server
+Install by running
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+```
+npm install @lunacap/bottom-sheet-modal
 
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+yarn add @lunacap/bottom-sheet-modal
 ```
 
-## Step 2: Start your Application
+In the libraries dependencies, react-native-reanimated and react-native-safe-area-context packages are utilized so if they are not installed in your project you need to install these packages and add their native components as well.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+## Usage
 
-### For Android
+The modal utilizes states for displaying. It can be connected to redux or you can use local states.
 
-```bash
-# using npm
-npm run android
+The BottomSheetCardProps type is the definition for the visible modal and the BottomSheetModalProps type is the definiton for the container component.
 
-# OR using Yarn
-yarn android
+This library allows you to stack two bottom sheets on top of each other.
+
+```
+function App(): JSX.Element {
+  const [isModalExpanded, setIsModalExpanded] = useState<boolean>(false);
+  const [bottomSheetProps, setBottomSheetProps] =
+    useState<BottomSheetModalProps>();
+
+  const [isSecondModalExpanded, setIsSecondModalExpanded] =
+    useState<boolean>(false);
+  const [secondBottomSheetProps, setSecondBottomSheetProps] =
+    useState<BottomSheetModalProps>();
+
+  const handleExpandSecond = () => {
+    const bottomSheetProps: BottomSheetCardProps = {
+      children: (
+        <View style={{width: '100%', height: 150}}>
+          <Text>Bottom Sheet Content Second</Text>
+        </View>
+      ),
+    };
+    setSecondBottomSheetProps(bottomSheetProps);
+    setIsSecondModalExpanded(true);
+  };
+
+  const handleExpand = () => {
+    const bottomSheetProps: BottomSheetCardProps = {
+      children: (
+        <View style={{width: '100%', height: 300}}>
+          <Text>Bottom Sheet Content Second</Text>
+          <Button title="expand second" onPress={handleExpandSecond} />
+        </View>
+      ),
+    };
+    setBottomSheetProps(bottomSheetProps);
+    setIsModalExpanded(true);
+  };
+  return (
+    <SafeAreaProvider>
+      <Button title="expand" onPress={handleExpand} />
+      <BottomSheet
+        isModalVisible={isModalExpanded}
+        setIsModalVisible={setIsModalExpanded}
+        firstBottomSheetCardProps={bottomSheetProps}
+        isSecondModalVisible={isSecondModalExpanded}
+        setIsSecondModalVisible={setIsSecondModalExpanded}
+        secondBottomSheetProps={secondBottomSheetProps}
+      />
+    </SafeAreaProvider>
+  );
+}
 ```
 
-### For iOS
+## Available Props
 
-```bash
-# using npm
-npm run ios
+### Modal
 
-# OR using Yarn
-yarn ios
-```
+| PropName                     |          type          | required |                                                        Description |
+| ---------------------------- | :--------------------: | -------- | -----------------------------------------------------------------: |
+| isModalVisible               |        boolean         | yes      |                Prop for the initial visibility of the bottom sheet |
+| setIsModalVisible            | action setter function | yes      |                                  Prop for updating the outer state |
+| isSecondModalVisible         |        boolean         | no       |                Prop for the stacked visibility of the bottom sheet |
+| setIsSecondModalVisible      | action setter function | no       |                                  Prop for updating the outer state |
+| firstBottomSheetCardProps    |          Card          | yes      |                                            Initial card properties |
+| secondBottomSheetProps       |          Card          | no       |                                             Second card properties |
+| firstBottomSheetFadeOutValue |         number         | no       | Fading value for the initial bottom sheet after the first one, 0-1 |
+| isOverlayDisabled            |        boolean         | no       |                            Whether or not the overlay is pressable |
+| overlayOpacity               |         number         | no       |                                               Overlay opacity, 0-1 |
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+### Card
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+| PropName       |       type        | required |                                   Description |
+| -------------- | :---------------: | -------- | --------------------------------------------: |
+| snapPosition   |      number       | no       | Prop for determining the position of the card |
+| indicatorStyle | view style object | no       |       Prop for overriding the indicator style |
+| modalStyle     | view style object | no       |           Prop for overriding the modal style |
