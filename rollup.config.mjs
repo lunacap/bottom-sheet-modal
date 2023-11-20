@@ -30,6 +30,7 @@ export default [
           description: pkg.description,
           bugs: pkg.bugs,
           repository: pkg.repository,
+          keywords: pkg.keywords,
           license: pkg.license,
           main: 'index.esm.js',
           version: pkg.version,
