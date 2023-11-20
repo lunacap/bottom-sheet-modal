@@ -1,5 +1,4 @@
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-const exclusionList = require('metro-config/src/defaults/exclusionList');
 
 /**
  * Metro configuration
@@ -9,9 +8,7 @@ const exclusionList = require('metro-config/src/defaults/exclusionList');
  */
 const config = {
   resetCache: true,
-  resolver: {
-    blockList: exclusionList([/dist\/.*/, /node_modules\/.*/]),
-  },
+  resolver: {},
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
