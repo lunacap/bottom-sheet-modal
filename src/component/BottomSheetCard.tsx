@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {LayoutChangeEvent, View, ViewStyle} from 'react-native';
 import Animated, {SharedValue, useAnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -41,7 +41,6 @@ const BottomSheetCard = ({
   verticalPosition,
   width,
   opacity,
-  overlayOpacity,
 }: BottomSheetCardInternalProps) => {
   const [contentHeight, setContentHeight] = useState<number>(0);
   const {bottom: safeAreaBottom} = useSafeAreaInsets();
@@ -57,23 +56,6 @@ const BottomSheetCard = ({
   );
 
   const safeProperties: Array<SafeProperty> = [
-    {
-      propertyName: 'overlayOpacity',
-      propertyValue: overlayOpacity,
-      typeSafety: {
-        propertyType: DataTypes.NUMBER,
-      },
-      valueSafety: [
-        {
-          compareType: CompareTypes.HIGHER,
-          compareValue: 1,
-        },
-        {
-          compareType: CompareTypes.LOWER,
-          compareValue: 0,
-        },
-      ],
-    },
     {
       propertyName: 'snapPosition',
       propertyValue: snapPosition,
