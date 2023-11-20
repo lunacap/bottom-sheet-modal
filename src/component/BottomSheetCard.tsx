@@ -10,16 +10,31 @@ import {BottomSheetCardProps} from './BottomSheetModal';
 import {styles} from './BottomSheetModal.styles';
 
 export type BottomSheetCardInternalProps = BottomSheetCardProps & {
+  /**
+   *
+   * @param height used to provide the height of its children
+   */
   onLayout: (height: number) => void;
+
+  /**
+   * @param verticalPosition used to move the bottomsheet card vertically
+   */
   verticalPosition: SharedValue<number>;
+
+  /**
+   * @param width used to adjust the width when secondary bottomsheet is opened
+   */
   width?: SharedValue<number>;
+
+  /**
+   * @param opacity used to change the opacity of the card when secondary bottom sheet is opened
+   */
   opacity?: SharedValue<number>;
 };
 
 const BottomSheetCard = ({
   children,
   indicatorStyle,
-  isOverlayDisabled,
   modalStyle,
   snapPosition,
   onLayout,
@@ -42,13 +57,6 @@ const BottomSheetCard = ({
   );
 
   const safeProperties: Array<SafeProperty> = [
-    {
-      propertyName: 'isOverlayDisabled',
-      propertyValue: isOverlayDisabled,
-      typeSafety: {
-        propertyType: DataTypes.BOOLEAN,
-      },
-    },
     {
       propertyName: 'overlayOpacity',
       propertyValue: overlayOpacity,

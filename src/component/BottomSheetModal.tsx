@@ -15,20 +15,66 @@ import {BottomSheetCard} from './BottomSheetCard';
 import {styles} from './BottomSheetModal.styles';
 
 export type BottomSheetModalProps = {
+  /**
+   * @param isModalVisible boolean value for initial bottom sheet modal visibility
+   */
   isModalVisible: boolean;
+
+  /**
+   *
+   * @param setIsModalVisible setter method of the useState or another asynchronous state setter method, needs to be provided for smooth opening and closing of the modal
+   */
   setIsModalVisible: (value: boolean) => void;
+
+  /**
+   * @param isSecondModalVisible boolean value for the secondary bottom sheet modal visibility
+   */
   isSecondModalVisible?: boolean;
+
+  /**
+   *
+   * @param setIsSecondModalVisible setter method of the useState or another asynchronous state setter method for the second bottom sheet, needs to be provided for smooth opening and closing of the modal
+   */
   setIsSecondModalVisible?: (value: boolean) => void;
+
+  /**
+   * @param firstBottomSheetCardProps properties to manange the content of the initial modal
+   */
   firstBottomSheetCardProps: BottomSheetCardProps;
+
+  /**
+   * @param secondBottomSheetProps properties to manange the content of the second modal
+   */
   secondBottomSheetProps?: BottomSheetCardProps;
+
+  /**
+   * @param firstBottomSheetFadeOutValue value to manage the fadeing out value of the initial modal when second is expanded, default value is 0.2
+   */
   firstBottomSheetFadeOutValue?: number;
+
+  /**
+   * @param isOverlayDisabled property to manage whether or nor the overlay will respond to press events
+   */
+  isOverlayDisabled?: boolean;
 };
 
 export type BottomSheetCardProps = PropsWithChildren<{
-  isOverlayDisabled?: boolean;
+  /**
+   * @param snapPosition property to override where should the modal expand to, limited to screen height - 50
+   */
   snapPosition?: number;
+  /**
+   * @param snapPosition property to manage the density of overlay, accepts values between 0 and 1
+   */
   overlayOpacity?: number;
+  /**
+   * @param indicatorStyle property to override stylings for the indicator, property alignSelf will be ignored
+   */
   indicatorStyle?: StyleProp<ViewStyle>;
+
+  /**
+   * @param modalStyle property to override stylings for the modal, properties transform, top, width, height, position will be ignored
+   */
   modalStyle?: StyleProp<ViewStyle>;
 }>;
 
@@ -40,6 +86,7 @@ export const BottomSheetModal = ({
   firstBottomSheetCardProps,
   secondBottomSheetProps,
   firstBottomSheetFadeOutValue,
+  isOverlayDisabled,
 }: BottomSheetModalProps): JSX.Element => {
   const [isModalVisibleInternal, setIsBottomVisibleInternal] =
     useState<boolean>(false);
@@ -105,16 +152,23 @@ export const BottomSheetModal = ({
     opacity: overlayOpacity.value,
   }));
 
-  const Overlay = () => {
+  const Overlay = useCallback(() => {
     return (
       <AnimatedPressable
         style={[styles.overlay, animatedOverlayStyle]}
-        onPress={handleOverlayPress}
+        onPress={isOverlayDisabled ? undefined : handleOverlayPress}
       />
     );
-  };
+  }, []);
 
   const safeProperties: Array<SafeProperty> = [
+    {
+      propertyName: 'isOverlayDisabled',
+      propertyValue: isOverlayDisabled,
+      typeSafety: {
+        propertyType: DataTypes.BOOLEAN,
+      },
+    },
     {
       propertyName: 'isModalVisible',
       propertyValue: isModalVisible,
@@ -142,7 +196,6 @@ export const BottomSheetModal = ({
         width={firstBottomSheetWidth}
         opacity={bottomSheetOpacity}
         overlayOpacity={firstBottomSheetCardProps.overlayOpacity}
-        isOverlayDisabled={firstBottomSheetCardProps.isOverlayDisabled}
         modalStyle={firstBottomSheetCardProps.modalStyle}
         snapPosition={firstBottomSheetCardProps.snapPosition}>
         {firstBottomSheetCardProps.children}
@@ -152,7 +205,6 @@ export const BottomSheetModal = ({
         verticalPosition={secondCardVerticalPosition}
         indicatorStyle={secondBottomSheetProps?.indicatorStyle}
         overlayOpacity={secondBottomSheetProps?.overlayOpacity}
-        isOverlayDisabled={secondBottomSheetProps?.isOverlayDisabled}
         modalStyle={secondBottomSheetProps?.modalStyle}
         snapPosition={secondBottomSheetProps?.snapPosition}>
         {secondBottomSheetProps?.children}
