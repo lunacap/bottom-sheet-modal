@@ -1,4 +1,4 @@
-import React, {PropsWithChildren, useCallback, useMemo, useState} from 'react';
+import {PropsWithChildren, useCallback, useMemo, useState} from 'react';
 import {Keyboard, Modal, Pressable, StyleProp, ViewStyle} from 'react-native';
 import Animated, {runOnJS, useAnimatedStyle} from 'react-native-reanimated';
 
