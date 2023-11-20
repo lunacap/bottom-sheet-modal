@@ -2,6 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import generatePackageJson from 'rollup-plugin-generate-package-json';
 import dts from 'rollup-plugin-dts';
+import copy from 'rollup-plugin-copy';
 
 import packageJson from './package.json' assert {type: 'json'};
 
@@ -37,6 +38,9 @@ export default [
           peerDependencies: pkg.peerDependencies,
           private: false,
         }),
+      }),
+      copy({
+        targets: [{src: 'README.md', dest: 'dist'}],
       }),
     ],
   },
