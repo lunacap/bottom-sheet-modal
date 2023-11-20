@@ -3,7 +3,7 @@ import {Button, SafeAreaView, Text, View, TextInput} from 'react-native';
 
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import {BottomSheetCardProps, BottomSheetModal} from './src';
+import BottomSheetModal, {BottomSheetCardProps} from './src';
 
 const App = () => {
   const [isFirstBottomSheetVisible, setIsFirstBottomSheetVisible] =

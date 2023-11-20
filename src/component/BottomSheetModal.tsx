@@ -80,7 +80,7 @@ export type BottomSheetCardProps = PropsWithChildren<{
   modalStyle?: StyleProp<ViewStyle>;
 }>;
 
-export const BottomSheetModal = ({
+const BottomSheetModal = ({
   isModalVisible,
   setIsModalVisible,
   isSecondModalVisible,
@@ -223,3 +223,5 @@ export const BottomSheetModal = ({
     </Modal>
   );
 };
+
+export default BottomSheetModal;
