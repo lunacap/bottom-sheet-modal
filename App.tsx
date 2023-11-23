@@ -3,21 +3,21 @@ import {Button, SafeAreaView, Text, View, TextInput} from 'react-native';
 
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import BottomSheetModal, {BottomSheetCardProps} from './src';
+import BottomSheetModal, {BottomSheetProps} from './src';
 
 const App = () => {
   const [isFirstBottomSheetVisible, setIsFirstBottomSheetVisible] =
     useState<boolean>(false);
   const [firstBottomSheetProps, setFirstBottomSheetProps] =
-    useState<BottomSheetCardProps>({});
+    useState<BottomSheetProps>({});
 
   const [isSecondBottomSheetVisible, setIsSecondBottomSheetVisible] =
     useState<boolean>(false);
   const [secondBottomSheetProps, setSecondBottomSheetProps] =
-    useState<BottomSheetCardProps>({});
+    useState<BottomSheetProps>({});
 
   const expandFirstBottomSheet = () => {
-    const bottomSheetProps: BottomSheetCardProps = {
+    const bottomSheetProps: BottomSheetProps = {
       children: (
         <View style={{paddingHorizontal: 16, paddingTop: 16, height: 200}}>
           <Text>Title for First</Text>
@@ -61,7 +61,7 @@ const App = () => {
   };
 
   const expandSecondBottomSheet = () => {
-    const bottomSheetProps: BottomSheetCardProps = {
+    const bottomSheetProps: BottomSheetProps = {
       children: <>{secondBottomSheetView()}</>,
     };
     setSecondBottomSheetProps(bottomSheetProps);
@@ -73,11 +73,11 @@ const App = () => {
       <SafeAreaView style={{width: '100%', height: '100%'}}>
         <Button title="Show Modal" onPress={expandFirstBottomSheet} />
         <BottomSheetModal
-          isModalVisible={isFirstBottomSheetVisible}
-          setIsModalVisible={setIsFirstBottomSheetVisible}
-          isSecondModalVisible={isSecondBottomSheetVisible}
-          setIsSecondModalVisible={setIsSecondBottomSheetVisible}
-          firstBottomSheetCardProps={firstBottomSheetProps}
+          isBottomSheetVisible={isFirstBottomSheetVisible}
+          setIsBottomSheetVisible={setIsFirstBottomSheetVisible}
+          isSecondBottomSheetVisible={isSecondBottomSheetVisible}
+          setIsSecondBottomSheetVisible={setIsSecondBottomSheetVisible}
+          firstBottomSheetProps={firstBottomSheetProps}
           secondBottomSheetProps={secondBottomSheetProps}
         />
       </SafeAreaView>

@@ -18,76 +18,107 @@ In the libraries dependencies, react-native-reanimated and react-native-safe-are
 
 The modal utilizes states for displaying. It can be connected to redux or you can use local states.
 
-The BottomSheetCardProps type is the definition for the visible modal and the BottomSheetModalProps type is the definiton for the container component.
+The BottomSheetProps type is the definition for the visible modal and the BottomSheetModalProps type is the definiton for the container component.
 
 This library allows you to stack two bottom sheets on top of each other.
 
 ```
-function App(): JSX.Element {
-  const [isModalExpanded, setIsModalExpanded] = useState<boolean>(false);
-  const [bottomSheetProps, setBottomSheetProps] =
-    useState<BottomSheetModalProps>();
+const App = () => {
+  const [isFirstBottomSheetVisible, setIsFirstBottomSheetVisible] =
+    useState<boolean>(false);
+  const [firstBottomSheetProps, setFirstBottomSheetProps] =
+    useState<BottomSheetProps>({});
 
-  const [isSecondModalExpanded, setIsSecondModalExpanded] =
+  const [isSecondBottomSheetVisible, setIsSecondBottomSheetVisible] =
     useState<boolean>(false);
   const [secondBottomSheetProps, setSecondBottomSheetProps] =
-    useState<BottomSheetModalProps>();
+    useState<BottomSheetProps>({});
 
-  const handleExpandSecond = () => {
-    const bottomSheetProps: BottomSheetCardProps = {
+  const expandFirstBottomSheet = () => {
+    const bottomSheetProps: BottomSheetProps = {
       children: (
-        <View style={{width: '100%', height: 150}}>
-          <Text>Bottom Sheet Content Second</Text>
+        <View style={{paddingHorizontal: 16, paddingTop: 16, height: 200}}>
+          <Text>Title for First</Text>
+          <Button title="Show Second Modal" onPress={expandSecondBottomSheet} />
+          <Text>Write Some Text</Text>
+          <TextInput
+            style={{
+              width: '100%',
+              height: 50,
+              borderColor: 'black',
+              borderWidth: 1,
+            }}
+          />
         </View>
       ),
+    };
+    setFirstBottomSheetProps(bottomSheetProps);
+    setIsFirstBottomSheetVisible(true);
+  };
+
+  const secondBottomSheetView = () => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          height: 250,
+        }}>
+        <Text>Title for Second</Text>
+        <Text>Write Some Text</Text>
+        <TextInput
+          style={{
+            width: '100%',
+            height: 50,
+            borderColor: 'black',
+            borderWidth: 1,
+          }}
+        />
+      </View>
+    );
+  };
+
+  const expandSecondBottomSheet = () => {
+    const bottomSheetProps: BottomSheetProps = {
+      children: <>{secondBottomSheetView()}</>,
     };
     setSecondBottomSheetProps(bottomSheetProps);
-    setIsSecondModalExpanded(true);
+    setIsSecondBottomSheetVisible(true);
   };
 
-  const handleExpand = () => {
-    const bottomSheetProps: BottomSheetCardProps = {
-      children: (
-        <View style={{width: '100%', height: 300}}>
-          <Text>Bottom Sheet Content Second</Text>
-          <Button title="expand second" onPress={handleExpandSecond} />
-        </View>
-      ),
-    };
-    setBottomSheetProps(bottomSheetProps);
-    setIsModalExpanded(true);
-  };
   return (
     <SafeAreaProvider>
-      <Button title="expand" onPress={handleExpand} />
-      <BottomSheet
-        isModalVisible={isModalExpanded}
-        setIsModalVisible={setIsModalExpanded}
-        firstBottomSheetCardProps={bottomSheetProps}
-        isSecondModalVisible={isSecondModalExpanded}
-        setIsSecondModalVisible={setIsSecondModalExpanded}
-        secondBottomSheetProps={secondBottomSheetProps}
-      />
+      <SafeAreaView style={{width: '100%', height: '100%'}}>
+        <Button title="Show Modal" onPress={expandFirstBottomSheet} />
+        <BottomSheetModal
+          isBottomSheetVisible={isFirstBottomSheetVisible}
+          setIsBottomSheetVisible={setIsFirstBottomSheetVisible}
+          isSecondBottomSheetVisible={isSecondBottomSheetVisible}
+          setIsSecondBottomSheetVisible={setIsSecondBottomSheetVisible}
+          firstBottomSheetProps={firstBottomSheetProps}
+          secondBottomSheetProps={secondBottomSheetProps}
+        />
+      </SafeAreaView>
     </SafeAreaProvider>
   );
-}
+};
 ```
 
 ## Available Props
 
 ### Modal
 
-| PropName                     |          type          | required |                                                        Description |
-| ---------------------------- | :--------------------: | -------- | -----------------------------------------------------------------: |
-| isModalVisible               |        boolean         | yes      |                Prop for the initial visibility of the bottom sheet |
-| setIsModalVisible            | action setter function | yes      |                                  Prop for updating the outer state |
-| isSecondModalVisible         |        boolean         | no       |                Prop for the stacked visibility of the bottom sheet |
-| setIsSecondModalVisible      | action setter function | no       |                                  Prop for updating the outer state |
-| firstBottomSheetCardProps    |          Card          | yes      |                                            Initial card properties |
-| secondBottomSheetProps       |          Card          | no       |                                             Second card properties |
-| firstBottomSheetFadeOutValue |         number         | no       | Fading value for the initial bottom sheet after the first one, 0-1 |
-| isOverlayDisabled            |        boolean         | no       |                            Whether or not the overlay is pressable |
-| overlayOpacity               |         number         | no       |                                               Overlay opacity, 0-1 |
+| PropName                      |          type          | required |                                                        Description |
+| ----------------------------- | :--------------------: | -------- | -----------------------------------------------------------------: |
+| isBottomSheetVisible          |        boolean         | yes      |                Prop for the initial visibility of the bottom sheet |
+| setIsBottomSheetVisible       | action setter function | yes      |                                  Prop for updating the outer state |
+| isSecondBottomSheetVisible    |        boolean         | no       |                Prop for the stacked visibility of the bottom sheet |
+| setIsSecondBottomSheetVisible | action setter function | no       |                                  Prop for updating the outer state |
+| firstBottomSheetProps         |          Card          | yes      |                                           Initial sheet properties |
+| secondBottomSheetProps        |          Card          | no       |                                            Second sheet properties |
+| firstBottomSheetFadeOutValue  |         number         | no       | Fading value for the initial bottom sheet after the first one, 0-1 |
+| isOverlayDisabled             |        boolean         | no       |                            Whether or not the overlay is pressable |
+| overlayOpacity                |         number         | no       |                                               Overlay opacity, 0-1 |
 
 ### Card
 

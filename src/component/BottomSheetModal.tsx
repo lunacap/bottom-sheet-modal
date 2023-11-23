@@ -1,5 +1,5 @@
-import {PropsWithChildren, useCallback, useMemo, useState} from 'react';
-import {Keyboard, Modal, Pressable, StyleProp, ViewStyle} from 'react-native';
+import {useCallback, useMemo, useState} from 'react';
+import {Keyboard, Modal, Pressable} from 'react-native';
 import Animated, {runOnJS, useAnimatedStyle} from 'react-native-reanimated';
 
 import {
@@ -11,41 +11,41 @@ import {
 } from '../hooks';
 import {CompareTypes, DataTypes} from '../constants';
 
-import {BottomSheetCard} from './BottomSheetCard';
+import {BottomSheet, BottomSheetProps} from './BottomSheet';
 import {styles} from './BottomSheetModal.styles';
 
 export type BottomSheetModalProps = {
   /**
-   * @param isModalVisible boolean value for initial bottom sheet modal visibility
+   * @param isBottomSheetVisible boolean value for initial bottom sheet modal visibility
    */
-  isModalVisible: boolean;
+  isBottomSheetVisible: boolean;
 
   /**
    *
-   * @param setIsModalVisible setter method of the useState or another asynchronous state setter method, needs to be provided for smooth opening and closing of the modal
+   * @param setIsBottomSheetVisible setter method of the useState or another asynchronous state setter method, needs to be provided for smooth opening and closing of the modal
    */
-  setIsModalVisible: (value: boolean) => void;
+  setIsBottomSheetVisible: (value: boolean) => void;
 
   /**
-   * @param isSecondModalVisible boolean value for the secondary bottom sheet modal visibility
+   * @param isSecondBottomSheetVisible boolean value for the secondary bottom sheet modal visibility
    */
-  isSecondModalVisible?: boolean;
+  isSecondBottomSheetVisible?: boolean;
 
   /**
    *
-   * @param setIsSecondModalVisible setter method of the useState or another asynchronous state setter method for the second bottom sheet, needs to be provided for smooth opening and closing of the modal
+   * @param setIsSecondBottomSheetVisible setter method of the useState or another asynchronous state setter method for the second bottom sheet, needs to be provided for smooth opening and closing of the modal
    */
-  setIsSecondModalVisible?: (value: boolean) => void;
+  setIsSecondBottomSheetVisible?: (value: boolean) => void;
 
   /**
-   * @param firstBottomSheetCardProps properties to manange the content of the initial modal
+   * @param firstBottomSheetProps properties to manange the content of the initial modal
    */
-  firstBottomSheetCardProps: BottomSheetCardProps;
+  firstBottomSheetProps: BottomSheetProps;
 
   /**
    * @param secondBottomSheetProps properties to manange the content of the second modal
    */
-  secondBottomSheetProps?: BottomSheetCardProps;
+  secondBottomSheetProps?: BottomSheetProps;
 
   /**
    * @param firstBottomSheetFadeOutValue value to manage the fadeing out value of the initial modal when second is expanded, default value is 0.2
@@ -63,29 +63,12 @@ export type BottomSheetModalProps = {
   overlayOpacity?: number;
 };
 
-export type BottomSheetCardProps = PropsWithChildren<{
-  /**
-   * @param snapPosition property to override where should the modal expand to, limited to screen height - 50
-   */
-  snapPosition?: number;
-
-  /**
-   * @param indicatorStyle property to override stylings for the indicator, property alignSelf will be ignored
-   */
-  indicatorStyle?: StyleProp<ViewStyle>;
-
-  /**
-   * @param modalStyle property to override stylings for the modal, properties transform, top, width, height, position will be ignored
-   */
-  modalStyle?: StyleProp<ViewStyle>;
-}>;
-
 const BottomSheetModal = ({
-  isModalVisible,
-  setIsModalVisible,
-  isSecondModalVisible,
-  setIsSecondModalVisible,
-  firstBottomSheetCardProps,
+  isBottomSheetVisible,
+  setIsBottomSheetVisible,
+  isSecondBottomSheetVisible,
+  setIsSecondBottomSheetVisible,
+  firstBottomSheetProps,
   secondBottomSheetProps,
   firstBottomSheetFadeOutValue,
   isOverlayDisabled,
@@ -104,42 +87,42 @@ const BottomSheetModal = ({
 
   const firstBottomSheetCallback = useCallback((value: boolean) => {
     setIsBottomVisibleInternal(value);
-    setIsModalVisible(value);
+    setIsBottomSheetVisible(value);
   }, []);
 
   const secondBottomSheetCallback = useCallback((value: boolean) => {
-    setIsSecondModalVisible?.(value);
+    setIsSecondBottomSheetVisible?.(value);
   }, []);
 
   const handleOverlayPress = useCallback(() => {
-    if (isSecondModalVisible && setIsSecondModalVisible) {
+    if (isSecondBottomSheetVisible && setIsSecondBottomSheetVisible) {
       if (Keyboard.isVisible()) {
         Keyboard.dismiss();
       }
-      runOnJS(setIsSecondModalVisible)(false);
+      runOnJS(setIsSecondBottomSheetVisible)(false);
     } else {
-      runOnJS(setIsModalVisible)(false);
+      runOnJS(setIsBottomSheetVisible)(false);
     }
-  }, [isSecondModalVisible]);
+  }, [isSecondBottomSheetVisible]);
 
-  const firstCardVerticalPosition = useVerticalAnimatedPosition({
-    isCardVisible: isModalVisible,
-    target: isSecondModalVisible
+  const firstSheetVerticalPosition = useVerticalAnimatedPosition({
+    isBottomSheetVisible: isBottomSheetVisible,
+    target: isSecondBottomSheetVisible
       ? secondContentHeight + 30
       : firstContentHeight,
     callback: firstBottomSheetCallback,
   });
 
-  const secondCardVerticalPosition = useVerticalAnimatedPosition({
-    isCardVisible: isSecondModalVisible as boolean,
+  const secondSheetVerticalPosition = useVerticalAnimatedPosition({
+    isBottomSheetVisible: isSecondBottomSheetVisible as boolean,
     target: secondContentHeight,
     callback: secondBottomSheetCallback,
   });
 
   const {overlayOpacity: overlayOpacityValue, bottomSheetOpacity} =
     useAnimatedOpacity({
-      isModalVisible: isSecondModalVisible || isModalVisible,
-      isSecondModalVisible: isSecondModalVisible as boolean,
+      isModalVisible: isSecondBottomSheetVisible || isBottomSheetVisible,
+      isSecondModalVisible: isSecondBottomSheetVisible as boolean,
       target: {
         overlay: overlayOpacity as number,
         bottomSheet: firstBottomSheetFadeOutValue as number,
@@ -147,7 +130,7 @@ const BottomSheetModal = ({
     });
 
   const firstBottomSheetWidth = useWidth({
-    shouldScale: isSecondModalVisible as boolean,
+    shouldScale: isSecondBottomSheetVisible as boolean,
   });
 
   const animatedOverlayStyle = useAnimatedStyle(() => ({
@@ -180,15 +163,15 @@ const BottomSheetModal = ({
       },
     },
     {
-      propertyName: 'isModalVisible',
-      propertyValue: isModalVisible,
+      propertyName: 'isSecondBottomSheetVisible',
+      propertyValue: isSecondBottomSheetVisible,
       typeSafety: {
         propertyType: DataTypes.BOOLEAN,
       },
     },
     {
-      propertyName: 'setIsModalVisible',
-      propertyValue: setIsModalVisible,
+      propertyName: 'setIsSecondBottomSheetVisible',
+      propertyValue: setIsSecondBottomSheetVisible,
       typeSafety: {
         propertyType: DataTypes.FUNCTION,
       },
@@ -202,26 +185,28 @@ const BottomSheetModal = ({
         style={[styles.overlay, animatedOverlayStyle]}
         onPress={isOverlayDisabled ? undefined : handleOverlayPress}
       />
-      <BottomSheetCard
+      <BottomSheet
         onLayout={setFirstContentHeight}
-        indicatorStyle={firstBottomSheetCardProps?.indicatorStyle}
-        verticalPosition={firstCardVerticalPosition}
+        indicatorStyle={firstBottomSheetProps?.indicatorStyle}
+        verticalPosition={firstSheetVerticalPosition}
         width={firstBottomSheetWidth}
         opacity={bottomSheetOpacity}
-        modalStyle={firstBottomSheetCardProps?.modalStyle}
-        snapPosition={firstBottomSheetCardProps?.snapPosition}>
-        {firstBottomSheetCardProps?.children}
-      </BottomSheetCard>
-      <BottomSheetCard
+        modalStyle={firstBottomSheetProps?.modalStyle}
+        snapPosition={firstBottomSheetProps?.snapPosition}>
+        {firstBottomSheetProps?.children}
+      </BottomSheet>
+      <BottomSheet
         onLayout={setSecondContentHeight}
-        verticalPosition={secondCardVerticalPosition}
+        verticalPosition={secondSheetVerticalPosition}
         indicatorStyle={secondBottomSheetProps?.indicatorStyle}
         modalStyle={secondBottomSheetProps?.modalStyle}
         snapPosition={secondBottomSheetProps?.snapPosition}>
         {secondBottomSheetProps?.children}
-      </BottomSheetCard>
+      </BottomSheet>
     </Modal>
   );
 };
+
+export {BottomSheetProps};
 
 export default BottomSheetModal;

@@ -4,13 +4,13 @@ import {runOnJS, useSharedValue, withTiming} from 'react-native-reanimated';
 import {ANIMATION_DURATION, MAX_SNAP_POSITION} from '../constants';
 
 export type UseVerticalAnimatedPositionProps = {
-  isCardVisible: boolean;
+  isBottomSheetVisible: boolean;
   target: number;
   callback: (value: boolean) => void;
 };
 
 export const useVerticalAnimatedPosition = ({
-  isCardVisible,
+  isBottomSheetVisible,
   target,
   callback,
 }: UseVerticalAnimatedPositionProps) => {
@@ -18,7 +18,7 @@ export const useVerticalAnimatedPosition = ({
 
   useEffect(() => {
     const capped = target <= MAX_SNAP_POSITION ? target : MAX_SNAP_POSITION;
-    if (isCardVisible) {
+    if (isBottomSheetVisible) {
       runOnJS(callback)(true);
       verticalPosition.value = withTiming(-capped, {
         duration: ANIMATION_DURATION,
@@ -30,7 +30,7 @@ export const useVerticalAnimatedPosition = ({
         () => runOnJS(callback)(false),
       );
     }
-  }, [isCardVisible, target]);
+  }, [isBottomSheetVisible, target]);
 
   return verticalPosition;
 };
