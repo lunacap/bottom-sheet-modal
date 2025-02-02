@@ -4,7 +4,7 @@ import generatePackageJson from 'rollup-plugin-generate-package-json';
 import dts from 'rollup-plugin-dts';
 import copy from 'rollup-plugin-copy';
 
-import packageJson from './package.json' assert {type: 'json'};
+import packageJson from './package.json' with {type: 'json'};
 
 export default [
   {
