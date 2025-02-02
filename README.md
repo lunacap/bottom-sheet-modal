@@ -91,6 +91,10 @@ const App = () => {
 };
 ```
 
+## In Action
+
+![Bottom Sheet In Action](assets/demo.gif)
+
 ## BottomSheetModal Component Props
 
 | Prop Name         |          Type           | Required | Description                                             |

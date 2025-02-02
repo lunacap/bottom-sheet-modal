@@ -60,6 +60,10 @@ const App = () => {
                 title={'Disable overlay'}
                 onPress={() => bottomSheetRef.current?.disableOverlay()}
               />
+              <Button
+                title={'Enable overlay'}
+                onPress={() => bottomSheetRef.current?.enableOverlay()}
+              />
             </View>
           ),
         }}
