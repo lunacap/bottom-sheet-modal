@@ -1,7 +1,7 @@
 {
   "name": "@lunacap/bottom-sheet-modal",
   "author": "Murat Karaca",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": false,
   "main": "src/index.ts",
   "description": "A react-native bottom sheet modal library for an easy and optimized implementation.",
@@ -62,6 +62,7 @@
     "metro-react-native-babel-preset": "0.76.8",
     "prettier": "^2.4.1",
     "react-test-renderer": "18.2.0",
+    "rollup": "^4.34.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-generate-package-json": "^3.2.0",
