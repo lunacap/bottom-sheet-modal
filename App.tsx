@@ -1,87 +1,70 @@
-import React, {useState} from 'react';
-import {Button, SafeAreaView, Text, View, TextInput} from 'react-native';
-
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-
-import BottomSheetModal, {BottomSheetProps} from './src';
+import {Button, Text, View} from 'react-native';
+import {BottomSheetModal} from './src/component/BottomSheetModal';
+import {useRef} from 'react';
+import {BottomSheetModalRef} from './src/component/types';
 
 const App = () => {
-  const [isFirstBottomSheetVisible, setIsFirstBottomSheetVisible] =
-    useState<boolean>(false);
-  const [firstBottomSheetProps, setFirstBottomSheetProps] =
-    useState<BottomSheetProps>({});
-
-  const [isSecondBottomSheetVisible, setIsSecondBottomSheetVisible] =
-    useState<boolean>(false);
-  const [secondBottomSheetProps, setSecondBottomSheetProps] =
-    useState<BottomSheetProps>({});
-
-  const expandFirstBottomSheet = () => {
-    const bottomSheetProps: BottomSheetProps = {
-      children: (
-        <View style={{paddingHorizontal: 16, paddingTop: 16, height: 200}}>
-          <Text>Title for First</Text>
-          <Button title="Show Second Modal" onPress={expandSecondBottomSheet} />
-          <Text>Write Some Text</Text>
-          <TextInput
-            style={{
-              width: '100%',
-              height: 50,
-              borderColor: 'black',
-              borderWidth: 1,
-            }}
-          />
-        </View>
-      ),
-    };
-    setFirstBottomSheetProps(bottomSheetProps);
-    setIsFirstBottomSheetVisible(true);
-  };
-
-  const secondBottomSheetView = () => {
-    return (
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          height: 250,
-        }}>
-        <Text>Title for Second</Text>
-        <Text>Write Some Text</Text>
-        <TextInput
-          style={{
-            width: '100%',
-            height: 50,
-            borderColor: 'black',
-            borderWidth: 1,
-          }}
-        />
-      </View>
-    );
-  };
-
-  const expandSecondBottomSheet = () => {
-    const bottomSheetProps: BottomSheetProps = {
-      children: <>{secondBottomSheetView()}</>,
-    };
-    setSecondBottomSheetProps(bottomSheetProps);
-    setIsSecondBottomSheetVisible(true);
-  };
-
+  const bottomSheetRef = useRef<BottomSheetModalRef>(null);
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={{width: '100%', height: '100%'}}>
-        <Button title="Show Modal" onPress={expandFirstBottomSheet} />
-        <BottomSheetModal
-          isBottomSheetVisible={isFirstBottomSheetVisible}
-          setIsBottomSheetVisible={setIsFirstBottomSheetVisible}
-          isSecondBottomSheetVisible={isSecondBottomSheetVisible}
-          setIsSecondBottomSheetVisible={setIsSecondBottomSheetVisible}
-          firstBottomSheetProps={firstBottomSheetProps}
-          secondBottomSheetProps={secondBottomSheetProps}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <Button
+        title={'Open First Bottom Sheet'}
+        onPress={() => {
+          bottomSheetRef.current?.expandFirst();
+        }}
+      />
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        firstPaperProps={{
+          header: (
+            <View
+              style={{
+                width: '100%',
+                paddingHorizontal: 12,
+                paddingVertical: 16,
+                backgroundColor: 'black',
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+              }}>
+              <Text style={{fontSize: 16, lineHeight: 24, color: 'white'}}>
+                Header First
+              </Text>
+            </View>
+          ),
+          children: (
+            <View
+              style={{
+                width: '100%',
+                height: 300,
+                backgroundColor: 'black',
+              }}>
+              <Button
+                title={'OPEN SECOND'}
+                onPress={() => {
+                  bottomSheetRef.current?.expandSecond();
+                }}
+              />
+            </View>
+          ),
+        }}
+        secondPaperProps={{
+          children: (
+            <View
+              style={{
+                backgroundColor: 'yellow',
+                borderRadius: 16,
+                width: '100%',
+                height: 200,
+              }}>
+              <Button
+                title={'Disable overlay'}
+                onPress={() => bottomSheetRef.current?.disableOverlay()}
+              />
+            </View>
+          ),
+        }}
+      />
+    </View>
   );
 };
 

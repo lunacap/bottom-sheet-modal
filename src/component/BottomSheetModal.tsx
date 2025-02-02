@@ -1,212 +1,192 @@
-import {useCallback, useMemo, useState} from 'react';
-import {Keyboard, Modal, Pressable} from 'react-native';
-import Animated, {runOnJS, useAnimatedStyle} from 'react-native-reanimated';
-
+import {LayoutChangeEvent, Modal} from 'react-native';
 import {
-  useAnimatedOpacity,
-  useVerticalAnimatedPosition,
-  useSafeProperties,
-  useWidth,
-  SafeProperty,
-} from '../hooks';
-import {CompareTypes, DataTypes} from '../constants';
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+import {BottomSheetPaper} from './BottomSheetPaper';
+import {
+  runOnJS,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import {ANIMATION_DURATION} from './constants';
+import {
+  BottomSheetModalProps,
+  BottomSheetModalRef,
+  BottomSheetPaperState,
+} from './types';
+import {Overlay} from './Overlay';
 
-import {BottomSheet, BottomSheetProps} from './BottomSheet';
-import {styles} from './BottomSheetModal.styles';
+export const BottomSheetModal = forwardRef<
+  BottomSheetModalRef,
+  BottomSheetModalProps
+>(
+  (
+    {
+      firstPaperProps,
+      secondPaperProps,
+      onOverlayPress,
+      overlay,
+      isOverlayDisabled = false,
+    },
+    ref,
+  ) => {
+    const [isVisible, setVisible] = useState(false);
+    const bottomSheetPaperState = useSharedValue(BottomSheetPaperState.NONE);
+    const firstPaperContentHeight = useSharedValue(0);
+    const secondPaperContentHeight = useSharedValue(0);
+    const firstPaperTarget = useSharedValue<number | null>(null);
+    const secondPaperTarget = useSharedValue<number | null>(null);
 
-export type BottomSheetModalProps = {
-  /**
-   * @param isBottomSheetVisible boolean value for initial bottom sheet modal visibility
-   */
-  isBottomSheetVisible: boolean;
+    const overlayDisabled = useRef<boolean>(isOverlayDisabled);
 
-  /**
-   *
-   * @param setIsBottomSheetVisible setter method of the useState or another asynchronous state setter method, needs to be provided for smooth opening and closing of the modal
-   */
-  setIsBottomSheetVisible: (value: boolean) => void;
-
-  /**
-   * @param isSecondBottomSheetVisible boolean value for the secondary bottom sheet modal visibility
-   */
-  isSecondBottomSheetVisible?: boolean;
-
-  /**
-   *
-   * @param setIsSecondBottomSheetVisible setter method of the useState or another asynchronous state setter method for the second bottom sheet, needs to be provided for smooth opening and closing of the modal
-   */
-  setIsSecondBottomSheetVisible?: (value: boolean) => void;
-
-  /**
-   * @param firstBottomSheetProps properties to manange the content of the initial modal
-   */
-  firstBottomSheetProps: BottomSheetProps;
-
-  /**
-   * @param secondBottomSheetProps properties to manange the content of the second modal
-   */
-  secondBottomSheetProps?: BottomSheetProps;
-
-  /**
-   * @param firstBottomSheetFadeOutValue value to manage the fadeing out value of the initial modal when second is expanded, default value is 0.2
-   */
-  firstBottomSheetFadeOutValue?: number;
-
-  /**
-   * @param isOverlayDisabled property to manage whether or nor the overlay will respond to press events
-   */
-  isOverlayDisabled?: boolean;
-
-  /**
-   * @param overlayOpacity property to manage the density of overlay, accepts values between 0 and 1
-   */
-  overlayOpacity?: number;
-};
-
-const BottomSheetModal = ({
-  isBottomSheetVisible,
-  setIsBottomSheetVisible,
-  isSecondBottomSheetVisible,
-  setIsSecondBottomSheetVisible,
-  firstBottomSheetProps,
-  secondBottomSheetProps,
-  firstBottomSheetFadeOutValue,
-  isOverlayDisabled,
-  overlayOpacity,
-}: BottomSheetModalProps): JSX.Element => {
-  const [isModalVisibleInternal, setIsBottomVisibleInternal] =
-    useState<boolean>(false);
-
-  const [firstContentHeight, setFirstContentHeight] = useState(0);
-  const [secondContentHeight, setSecondContentHeight] = useState(0);
-
-  const Overlay = useMemo(
-    () => Animated.createAnimatedComponent(Pressable),
-    [],
-  );
-
-  const firstBottomSheetCallback = useCallback((value: boolean) => {
-    setIsBottomVisibleInternal(value);
-    setIsBottomSheetVisible(value);
-  }, []);
-
-  const secondBottomSheetCallback = useCallback((value: boolean) => {
-    setIsSecondBottomSheetVisible?.(value);
-  }, []);
-
-  const handleOverlayPress = useCallback(() => {
-    if (isSecondBottomSheetVisible && setIsSecondBottomSheetVisible) {
-      if (Keyboard.isVisible()) {
-        Keyboard.dismiss();
+    const secondPaperPosition = useDerivedValue(() => {
+      if (bottomSheetPaperState.value === BottomSheetPaperState.SECOND) {
+        if (secondPaperTarget.value) {
+          return withTiming(secondPaperTarget.value, {
+            duration: ANIMATION_DURATION,
+          });
+        } else {
+          return withTiming(secondPaperContentHeight.value, {
+            duration: ANIMATION_DURATION,
+          });
+        }
+      } else {
+        return withTiming(0, {duration: ANIMATION_DURATION});
       }
-      runOnJS(setIsSecondBottomSheetVisible)(false);
-    } else {
-      runOnJS(setIsBottomSheetVisible)(false);
-    }
-  }, [isSecondBottomSheetVisible]);
-
-  const firstSheetVerticalPosition = useVerticalAnimatedPosition({
-    isBottomSheetVisible: isBottomSheetVisible,
-    target: isSecondBottomSheetVisible
-      ? secondContentHeight + 30
-      : firstContentHeight,
-    callback: firstBottomSheetCallback,
-  });
-
-  const secondSheetVerticalPosition = useVerticalAnimatedPosition({
-    isBottomSheetVisible: isSecondBottomSheetVisible as boolean,
-    target: secondContentHeight,
-    callback: secondBottomSheetCallback,
-  });
-
-  const {overlayOpacity: overlayOpacityValue, bottomSheetOpacity} =
-    useAnimatedOpacity({
-      isModalVisible: isSecondBottomSheetVisible || isBottomSheetVisible,
-      isSecondModalVisible: isSecondBottomSheetVisible as boolean,
-      target: {
-        overlay: overlayOpacity as number,
-        bottomSheet: firstBottomSheetFadeOutValue as number,
-      },
     });
 
-  const firstBottomSheetWidth = useWidth({
-    shouldScale: isSecondBottomSheetVisible as boolean,
-  });
+    const firstPaperPosition = useDerivedValue(() => {
+      if (bottomSheetPaperState.value === BottomSheetPaperState.FIRST) {
+        if (firstPaperTarget.value) {
+          return withTiming(firstPaperTarget.value, {
+            duration: ANIMATION_DURATION,
+          });
+        } else {
+          return withTiming(firstPaperContentHeight.value, {
+            duration: ANIMATION_DURATION,
+          });
+        }
+      } else if (bottomSheetPaperState.value === BottomSheetPaperState.SECOND) {
+        if (secondPaperTarget.value) {
+          return withTiming(secondPaperTarget.value + 16, {
+            duration: ANIMATION_DURATION,
+          });
+        } else {
+          return withTiming(secondPaperContentHeight.value + 16, {
+            duration: ANIMATION_DURATION,
+          });
+        }
+      } else {
+        return withTiming(0, {duration: ANIMATION_DURATION}, () => {
+          runOnJS(setVisible)(false);
+        });
+      }
+    });
 
-  const animatedOverlayStyle = useAnimatedStyle(() => ({
-    opacity: overlayOpacityValue.value,
-  }));
+    const firstScaleX = useDerivedValue<number>(() =>
+      bottomSheetPaperState.value === BottomSheetPaperState.FIRST ||
+      bottomSheetPaperState.value === BottomSheetPaperState.NONE
+        ? withTiming(1, {duration: ANIMATION_DURATION})
+        : withTiming(0.9, {duration: ANIMATION_DURATION}),
+    );
 
-  const safeProperties: Array<SafeProperty> = [
-    {
-      propertyName: 'overlayOpacity',
-      propertyValue: overlayOpacity,
-      typeSafety: {
-        propertyType: DataTypes.NUMBER,
+    const expandFirst = useCallback((target?: number) => {
+      bottomSheetPaperState.value = BottomSheetPaperState.FIRST;
+      if (target) {
+        firstPaperTarget.value = target;
+      }
+      runOnJS(setVisible)(true);
+    }, []);
+
+    const expandSecond = useCallback((target?: number) => {
+      bottomSheetPaperState.value = BottomSheetPaperState.SECOND;
+      if (target) {
+        secondPaperTarget.value = target;
+      }
+    }, []);
+
+    const collapseFirst = useCallback(() => {
+      bottomSheetPaperState.value = BottomSheetPaperState.NONE;
+      firstPaperTarget.value = null;
+      runOnJS(setVisible)(false);
+    }, []);
+
+    const collapseSecond = useCallback(() => {
+      bottomSheetPaperState.value = BottomSheetPaperState.FIRST;
+      secondPaperTarget.value = null;
+    }, []);
+
+    const enableOverlay = useCallback(() => {
+      overlayDisabled.current = false;
+    }, []);
+
+    const disableOverlay = useCallback(() => {
+      overlayDisabled.current = true;
+    }, []);
+
+    const handleFirstPaperLayout = useCallback((e: LayoutChangeEvent) => {
+      firstPaperContentHeight.value = e.nativeEvent.layout.height;
+    }, []);
+
+    const handleSecondPaperLayout = useCallback((e: LayoutChangeEvent) => {
+      secondPaperContentHeight.value = e.nativeEvent.layout.height;
+    }, []);
+
+    const handleOverlayPress = useCallback(() => {
+      if (overlayDisabled.current) {
+        return;
+      }
+      if (bottomSheetPaperState.value === BottomSheetPaperState.SECOND) {
+        bottomSheetPaperState.value = BottomSheetPaperState.FIRST;
+      } else {
+        bottomSheetPaperState.value = BottomSheetPaperState.NONE;
+      }
+      onOverlayPress?.();
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+      expandFirst,
+      collapseFirst,
+      collapseSecond,
+      expandSecond,
+      disableOverlay,
+      enableOverlay,
+      get paperState() {
+        return bottomSheetPaperState.value;
       },
-      valueSafety: [
-        {
-          compareType: CompareTypes.HIGHER,
-          compareValue: 1,
-        },
-        {
-          compareType: CompareTypes.LOWER,
-          compareValue: 0,
-        },
-      ],
-    },
-    {
-      propertyName: 'isOverlayDisabled',
-      propertyValue: isOverlayDisabled,
-      typeSafety: {
-        propertyType: DataTypes.BOOLEAN,
+      get overlayState() {
+        return overlayDisabled.current;
       },
-    },
-    {
-      propertyName: 'isSecondBottomSheetVisible',
-      propertyValue: isSecondBottomSheetVisible,
-      typeSafety: {
-        propertyType: DataTypes.BOOLEAN,
-      },
-    },
-    {
-      propertyName: 'setIsSecondBottomSheetVisible',
-      propertyValue: setIsSecondBottomSheetVisible,
-      typeSafety: {
-        propertyType: DataTypes.FUNCTION,
-      },
-    },
-  ];
-  useSafeProperties(safeProperties);
+    }));
 
-  return (
-    <Modal visible={isModalVisibleInternal} animationType="none" transparent>
-      <Overlay
-        style={[styles.overlay, animatedOverlayStyle]}
-        onPress={isOverlayDisabled ? undefined : handleOverlayPress}
-      />
-      <BottomSheet
-        onLayout={setFirstContentHeight}
-        indicatorStyle={firstBottomSheetProps?.indicatorStyle}
-        verticalPosition={firstSheetVerticalPosition}
-        width={firstBottomSheetWidth}
-        opacity={bottomSheetOpacity}
-        modalStyle={firstBottomSheetProps?.modalStyle}
-        snapPosition={firstBottomSheetProps?.snapPosition}>
-        {firstBottomSheetProps?.children}
-      </BottomSheet>
-      <BottomSheet
-        onLayout={setSecondContentHeight}
-        verticalPosition={secondSheetVerticalPosition}
-        indicatorStyle={secondBottomSheetProps?.indicatorStyle}
-        modalStyle={secondBottomSheetProps?.modalStyle}
-        snapPosition={secondBottomSheetProps?.snapPosition}>
-        {secondBottomSheetProps?.children}
-      </BottomSheet>
-    </Modal>
-  );
-};
-
-export {BottomSheetProps};
-
-export default BottomSheetModal;
+    return (
+      <Modal visible={isVisible} animationType={'none'} transparent>
+        <Overlay
+          bottomSheetPaperState={bottomSheetPaperState}
+          onPress={handleOverlayPress}
+          customOverlay={overlay}
+        />
+        <BottomSheetPaper
+          header={firstPaperProps.header}
+          position={firstPaperPosition}
+          onLayout={handleFirstPaperLayout}
+          scaleX={firstScaleX}
+          children={firstPaperProps.children}
+        />
+        {secondPaperProps ? (
+          <BottomSheetPaper
+            header={secondPaperProps.header}
+            position={secondPaperPosition}
+            onLayout={handleSecondPaperLayout}
+            children={secondPaperProps.children}
+          />
+        ) : null}
+      </Modal>
+    );
+  },
+);
