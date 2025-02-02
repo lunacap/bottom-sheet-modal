@@ -91,26 +91,37 @@ const App = () => {
 };
 ```
 
-## Available Props
+## BottomSheetModal Component Props
 
-### Modal
+| Prop Name         |          Type           | Required | Description                                             |
+|-------------------|:-----------------------:|:--------:|:--------------------------------------------------------|
+| firstPaperProps   | `BottomSheetPaperProps` |    ✓     | Configuration for the primary bottom sheet              |
+| secondPaperProps  | `BottomSheetPaperProps` |    -     | Configuration for the secondary (stacked) bottom sheet  |
+| onOverlayPress    |      `() => void`       |    -     | Callback function triggered when the overlay is pressed |
+| overlay           |    `React.ReactNode`    |    -     | Custom overlay component to replace the default overlay |
+| isOverlayDisabled |        `boolean`        |    -     | When true, disables overlay interaction                 |
 
-| PropName                      |          type          | required |                                                        Description |
-|-------------------------------|:----------------------:|----------|-------------------------------------------------------------------:|
-| isBottomSheetVisible          |        boolean         | yes      |                Prop for the initial visibility of the bottom sheet |
-| setIsBottomSheetVisible       | action setter function | yes      |                                  Prop for updating the outer state |
-| isSecondBottomSheetVisible    |        boolean         | no       |                Prop for the stacked visibility of the bottom sheet |
-| setIsSecondBottomSheetVisible | action setter function | no       |                                  Prop for updating the outer state |
-| firstBottomSheetProps         |          Card          | yes      |                                           Initial sheet properties |
-| secondBottomSheetProps        |          Card          | no       |                                            Second sheet properties |
-| firstBottomSheetFadeOutValue  |         number         | no       | Fading value for the initial bottom sheet after the first one, 0-1 |
-| isOverlayDisabled             |        boolean         | no       |                            Whether or not the overlay is pressable |
-| overlayOpacity                |         number         | no       |                                               Overlay opacity, 0-1 |
+## BottomSheetPaperProps
 
-### Card
+| Prop Name |       Type        | Required | Description                                              |
+|-----------|:-----------------:|:--------:|:---------------------------------------------------------|
+| children  | `React.ReactNode` |    ✓     | Content to be rendered inside the bottom sheet           |
+| header    | `React.ReactNode` |    -     | Custom header component rendered at the top of the sheet |
 
-| PropName       |       type        | required |                                   Description |
-|----------------|:-----------------:|----------|----------------------------------------------:|
-| snapPosition   |      number       | no       | Prop for determining the position of the card |
-| indicatorStyle | view style object | no       |       Prop for overriding the indicator style |
-| modalStyle     | view style object | no       |           Prop for overriding the modal style |
+## BottomSheetModalRef Methods
+
+| Method Name    |     Parameters      | Description                                                              |
+|----------------|:-------------------:|:-------------------------------------------------------------------------|
+| expandFirst    | `(target?: number)` | Opens the first bottom sheet. Optional target position can be specified  |
+| expandSecond   | `(target?: number)` | Opens the second bottom sheet. Optional target position can be specified |
+| collapseFirst  |          -          | Closes the first bottom sheet                                            |
+| collapseSecond |          -          | Closes the second bottom sheet                                           |
+| enableOverlay  |          -          | Enables overlay interaction                                              |
+| disableOverlay |          -          | Disables overlay interaction                                             |
+
+## Properties Available Through Ref
+
+| Property Name |          Type           | Description                                     |
+|---------------|:-----------------------:|:------------------------------------------------|
+| paperState    | `BottomSheetPaperState` | Current state of the bottom sheet papers        |
+| overlayState  |        `boolean`        | Current state of the overlay (enabled/disabled) |
